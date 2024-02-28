@@ -325,8 +325,14 @@ tar -C "$mp" -xpf - vmlinuz initrd.img boot/ < "$kernel_tar" ||
     fail "failed to extract kernel_tar"
 cp "$initramfs" "$mp/boot/initrd.img-${kver}"
 
-umount "${mp}" && UMOUNT="" ||
-    fail "failed to unmount ${out_partimg}"
+for i in {1..3}; do
+    umount "${mp}" && UMOUNT="" && break ||
+    if [ $i -lt 3 ]; then
+        sleep 1
+    else
+        fail "failed to unmount ${out_partimg}"
+    fi
+done
 
 cp "${kernel_d}/${vmlinuz}" "${out_kernel}" ||
     fail "failed to copy kernel to ${out_kernel}"
